@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Juguemos a Encontrar | Misión espacial</title>
+<style>
+  :root {
+    --bg: #050817; --panel: rgba(13, 22, 49, .91); --panel2: #17264c;
+    --text: #f4f7ff; --muted: #b7c5e8; --accent: #7de8ff;
+    --accent2: #b28cff; --good: #69dfa0; --bad: #ff8585;
+    --border: rgba(125, 232, 255, .28);
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; min-height: 100vh; color: var(--text);
+    font-family: system-ui, -apple-system, Segoe UI, sans-serif;
+    background:
+      radial-gradient(ellipse at 15% 12%, rgba(63, 81, 181, .28), transparent 32%),
+      radial-gradient(ellipse at 88% 32%, rgba(114, 54, 168, .22), transparent 30%),
+      radial-gradient(ellipse at 50% 100%, rgba(18, 104, 151, .18), transparent 42%),
+      #050817;
+    background-attachment: fixed;
+    overflow-x: hidden;
+  }
+  body::before {
+    content: ""; position: fixed; inset: 0; pointer-events: none; z-index: -1;
+    background-image:
+      radial-gradient(1px 1px at 8% 18%, #fff 98%, transparent),
+      radial-gradient(1px 1px at 24% 72%, #a9dfff 98%, transparent),
+      radial-gradient(2px 2px at 47% 29%, #fff 98%, transparent),
+      radial-gradient(1px 1px at 68% 83%, #fff 98%, transparent),
+      radial-gradient(1px 1px at 82% 16%, #c9b6ff 98%, transparent),
+      radial-gradient(2px 2px at 93% 61%, #fff 98%, transparent);
+    background-size: 310px 260px;
+    opacity: .7;
+  }
+  button { font: inherit; cursor: pointer; }
+  .wrap { width: min(960px, 92%); margin: auto; padding: 28px 0 50px; }
+  header { text-align: center; margin: 10px 0 26px; position: relative; }
+  .hero-image {
+    width: 100%; height: clamp(190px, 32vw, 310px); object-fit: cover;
+    border-radius: 22px; border: 1px solid rgba(125,232,255,.42);
+    box-shadow: 0 18px 60px rgba(0,0,0,.48), 0 0 35px rgba(87,156,255,.12);
+    margin: 16px 0 18px; display: block;
+  }
+  .image-frame {
+    margin: 16px 0 20px; border: 1px solid var(--border);
+    border-radius: 17px; overflow: hidden; background: #080e21;
+    box-shadow: 0 12px 35px rgba(0,0,0,.3);
+  }
+  .question-image { width: 100%; max-height: 310px; object-fit: cover; display:block; }
+  .image-caption { padding: 9px 13px; color: #aebfe4; font-size: .78rem; }
+  .image-source { padding: 0 13px 11px; font-size: .78rem; }
+  .image-source a { color: var(--accent); text-decoration: underline; }
+  .image-fallback { min-height:170px; place-items:center; color:#d8e8ff; font-size:1.2rem;
+    background:radial-gradient(circle at 50% 40%,#263c71,#080e21 70%); }
+  .image-frame { min-height:80px; }
+  .image-unavailable { min-height: 44px; }
+  .image-caption a { color: var(--accent); text-decoration: none; }
+  .image-caption a:hover { text-decoration: underline; }
+  .orbit-line { width: 110px; height: 2px; margin: 14px auto; background: linear-gradient(90deg, transparent, var(--accent), var(--accent2), transparent); }
+  .tag { background: rgba(125,232,255,.08); }
+  .eyebrow { color: var(--accent); text-transform: uppercase; letter-spacing: .16em; font-size: .78rem; font-weight: 800; }
+  h1 { margin: 8px 0; font-size: clamp(2rem, 6vw, 3.5rem); line-height: 1.05; }
+  .subtitle { color: var(--muted); max-width: 620px; margin: 12px auto; }
+  .panel {
+    background: linear-gradient(145deg, rgba(17,28,60,.96), rgba(9,15,36,.96));
+    border: 1px solid var(--border); border-radius: 20px;
+    padding: clamp(18px, 4vw, 30px);
+    box-shadow: 0 22px 65px rgba(0,0,0,.38), inset 0 1px rgba(255,255,255,.035);
+    backdrop-filter: blur(10px);
+  }
+  .hidden { display: none !important; }
+  .topline { display:flex; justify-content:space-between; gap:12px; flex-wrap:wrap; color:var(--muted); font-size:.92rem; }
+  .bar { height:9px; background:#303b60; border-radius:99px; overflow:hidden; margin:13px 0 24px; }
+  .bar > div { height:100%; width:0; background:linear-gradient(90deg,var(--accent),var(--accent2)); transition:width .25s; }
+  h2 { margin: 0 0 14px; font-size: clamp(1.35rem, 4vw, 1.8rem); }
+  p { line-height:1.6; }
+  .muted { color:var(--muted); }
+  .choices { display:grid; gap:11px; margin:20px 0; }
+  .choice {
+    text-align:left; width:100%; padding:14px 16px; border-radius:13px;
+    color:var(--text); background:linear-gradient(110deg,#192a52,#14203f);
+    border:1px solid var(--border);
+    transition: transform .15s, border-color .15s, background .15s, box-shadow .15s;
+  }
+  .choice:hover:not(:disabled) { transform:translateY(-2px); border-color:var(--accent); box-shadow:0 0 20px rgba(125,232,255,.12); }
+  .choice:disabled { cursor:default; opacity:1; }
+  .choice.correct { border-color:var(--good); background:rgba(105,223,160,.13); }
+  .choice.wrong { border-color:var(--bad); background:rgba(255,133,133,.12); }
+  .feedback { min-height:54px; border-radius:12px; padding:13px 15px; background:#111a35; color:var(--muted); margin:12px 0 18px; }
+  .feedback.good { border:1px solid rgba(105,223,160,.55); color:#c9ffe0; }
+  .feedback.bad { border:1px solid rgba(255,133,133,.55); color:#ffd5d5; }
+  .actions { display:flex; gap:10px; flex-wrap:wrap; margin-top:18px; }
+  .btn { border:0; border-radius:12px; padding:12px 18px; font-weight:800; background:var(--accent); color:#071426; }
+  .btn.secondary { background:#303d68; color:var(--text); border:1px solid var(--border); }
+  .btn:disabled { opacity:.45; cursor:not-allowed; }
+  .tag { display:inline-block; border:1px solid var(--border); border-radius:99px; padding:5px 10px; color:var(--accent); font-size:.8rem; margin-bottom:12px; }
+  .intro-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(190px,1fr)); gap:12px; margin:22px 0; }
+  .mini { padding:15px; background:linear-gradient(145deg,rgba(25,42,83,.8),rgba(10,18,43,.8)); border:1px solid var(--border); border-radius:13px; }
+  .mini strong { display:block; margin-bottom:5px; color:var(--accent); }
+  .result { font-size:2.5rem; font-weight:900; color:var(--accent); }
+  .decision-note { color:var(--muted); font-size:.9rem; }
+  footer { text-align:center; color:#8793bd; font-size:.8rem; margin-top:22px; }
+  @media (max-width:520px) { .panel { border-radius:15px; } .actions .btn { flex:1; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="eyebrow">Reto NASA Space Apps Challenge 2026</div>
+    <h1>Juguemos a Encontrar</h1>
+    <div class="orbit-line"></div>
+    <img class="hero-image" id="heroPhoto" alt="Fotografía real de Marte" src=""
+         onerror="this.style.display='none';document.getElementById('heroFallback').style.display='grid';">
+    <div id="heroFallback" class="image-fallback" style="display:none">🌌 Explorando el planeta Marte</div>
+    <p class="subtitle">Misión: Los exploradores perdidos. Responde, resuelve acertijos y toma decisiones para descubrir las historias de los equipos espaciales.</p>
+  </header>
+
+  <main>
+    <section id="start" class="panel">
+      <span class="tag">¡Bienvenido, explorador!</span>
+      <h2>¿Estás listo para comenzar?</h2>
+      <p>La NASA necesita tu ayuda para recordar los dispositivos que exploraron distintos lugares del sistema solar. Supera la trivia, resuelve los misterios y demuestra tu creatividad.</p>
+      <div class="intro-grid">
+        <div class="mini"><strong>1. Trivia</strong>Demuestra lo que sabes sobre las misiones.</div>
+        <div class="mini"><strong>2. Acertijos</strong>Descubre planetas y dispositivos con pistas.</div>
+        <div class="mini"><strong>3. Decisiones</strong>Imagina cómo ayudarías a los exploradores.</div>
+      </div>
+      <p class="muted">El juego tiene preguntas de opción múltiple. Lee la explicación después de cada respuesta.</p>
+      <div class="actions"><button class="btn" onclick="startGame()">Comenzar misión</button></div>
+    </section>
+
+    <section id="game" class="panel hidden">
+      <div class="topline"><span id="stage">Trivia espacial</span><span id="counter">Pregunta 1</span><span id="score">Puntos: 0</span></div>
+      <div class="bar"><div id="progress"></div></div>
+      <div id="content"></div>
+      <div id="feedback" class="feedback hidden" aria-live="polite"></div>
+      <div class="actions">
+        <button id="next" class="btn" onclick="nextItem()" disabled>Siguiente</button>
+        <button class="btn secondary" onclick="quitToStart()">Salir al inicio</button>
+      </div>
+    </section>
+
+    <section id="finish" class="panel hidden">
+      <span class="tag">Misión completada</span>
+      <h2>¡Buen trabajo, explorador!</h2>
+      <div class="result" id="finalScore">0 / 17</div>
+      <p id="finalMessage"></p>
+      <p class="muted" id="finalDetail"></p>
+      <div class="actions">
+        <button class="btn" onclick="startGame()">Jugar otra vez</button>
+        <button class="btn secondary" onclick="quitToStart()">Volver al inicio</button>
+      </div>
+    </section>
+  </main>
+  <footer>Juguemos a Encontrar · Recurso educativo inspirado en “Abandonados pero no olvidados”.<br>
+  Fotografías reales consultadas en la biblioteca oficial de NASA. Se necesita conexión a internet para cargarlas.</footer>
+</div>
+
+<script>
+// Las imágenes se buscan en la biblioteca oficial de imágenes y videos de NASA.
+// La API devuelve enlaces directos a las fotografías.
+const nasaImages = {
+ moon: {query:"Apollo 11 lunar module on Moon", caption:"Apollo 11: módulo lunar en la superficie de la Luna", source:"https://images.nasa.gov/search?q=Apollo%2011%20lunar%20module"},
+ mars: {query:"Mars Opportunity rover panorama", caption:"Marte y los rovers de exploración", source:"https://images.nasa.gov/search?q=Mars%20Opportunity%20rover"},
+ rover: {query:"Mars Pathfinder Sojourner rover", caption:"Sojourner, el rover de la misión Mars Pathfinder", source:"https://images.nasa.gov/search?q=Mars%20Pathfinder%20Sojourner"},
+ ingenuity: {query:"Ingenuity Mars helicopter", caption:"Ingenuity, el helicóptero que exploró Marte", source:"https://images.nasa.gov/search?q=Ingenuity%20Mars%20helicopter"},
+ venus: {query:"Magellan spacecraft Venus radar", caption:"Venus observado por la misión Magellan", source:"https://images.nasa.gov/search?q=Magellan%20Venus"},
+ mercury: {query:"MESSENGER spacecraft Mercury", caption:"Mercurio observado por la misión MESSENGER", source:"https://images.nasa.gov/search?q=MESSENGER%20Mercury"},
+ jupiter: {query:"Galileo spacecraft Jupiter", caption:"Júpiter observado por la misión Galileo", source:"https://images.nasa.gov/search?q=Galileo%20Jupiter"},
+ comet: {query:"Deep Impact mission comet Tempel 1", caption:"El cometa Tempel 1 observado durante Deep Impact", source:"https://images.nasa.gov/search?q=Deep%20Impact%20Tempel%201"},
+ moonSite: {query:"Apollo 11 Tranquility Base lunar module", caption:"El módulo lunar Apollo 11 sobre la superficie lunar", source:"https://images.nasa.gov/search?q=Apollo%2011%20Tranquility%20Base"}
+};
+const nasaImageCache = {};
+async function getNasaImage(key) {
+  if (nasaImageCache[key]) return nasaImageCache[key];
+  const entry = nasaImages[key] || nasaImages.mars;
+  nasaImageCache[key] = (async () => {
+    try {
+      const endpoint = "https://images-api.nasa.gov/search?media_type=image&page_size=8&q=" + encodeURIComponent(entry.query);
+      const response = await fetch(endpoint);
+      if (!response.ok) throw new Error("NASA image search unavailable");
+      const data = await response.json();
+      const records = data?.collection?.items || [];
+      for (const record of records) {
+        const meta = record.data?.[0] || {};
+        const preview = record.links?.find(link => link.rel === "preview")?.href || record.links?.[0]?.href;
+        if (preview && /\.(jpg|jpeg|png|webp)(\?|$)/i.test(preview)) {
+          return {url:preview, caption:meta.title || entry.caption, source:entry.source};
+        }
+      }
+      throw new Error("No image result");
+    } catch (error) {
+      return {url:null, caption:entry.caption, source:entry.source};
+    }
+  })();
+  return nasaImageCache[key];
+}
+function showNasaImage(img, captionNode, key) {
+  getNasaImage(key).then(photo => {
+    if (!photo.url) {
+      img.style.display = "none";
+      const frame = img.closest(".image-frame");
+      if (frame) frame.classList.add("image-unavailable");
+      if (captionNode) captionNode.textContent = photo.caption + " · Abre la fuente NASA para consultar la fotografía.";
+      return;
+    }
+    img.src = photo.url;
+    img.alt = photo.caption;
+    if (captionNode) captionNode.textContent = photo.caption + " · Imagen de NASA";
+  });
+}
+
+const trivia = [
+ {img:"moon",q:"¿En qué año llegó el ser humano a la Luna con la misión Apollo 11?",a:["1967","1969","1977"],c:1,e:"Apollo 11 aparece en el documento con el año 1969."},
+ {img:"rover",q:"¿En qué planeta trabajó el rover Sojourner?",a:["Marte","Venus","Mercurio"],c:0,e:"Sojourner fue parte de la misión Mars Pathfinder."},
+ {img:"mars",q:"¿Cuál era el objetivo principal del Spirit?",a:["Buscar vida humana","Estudiar rocas y suelos para encontrar pistas sobre el agua","Tomar fotografías de Venus"],c:1,e:"Su misión era investigar rocas y suelos marcianos en busca de señales de actividad pasada del agua."},
+ {img:"mars",q:"¿Qué le ocurrió al Opportunity?",a:["Se perdió en Júpiter","Sus paneles solares quedaron cubiertos de polvo","Cayó en un cometa"],c:1,e:"Una tormenta global de polvo cubrió sus paneles solares."},
+ {img:"mars",q:"¿Dónde terminó sus operaciones el rover Spirit?",a:["Cráter Gusev, Marte","Mare Tranquillitatis, Luna","Atmósfera de Venus"],c:0,e:"Su lugar de descanso final fue Troy, dentro del cráter Gusev."},
+ {img:"ingenuity",q:"¿Qué dispositivo sufrió daños en sus rotores durante un aterrizaje brusco?",a:["Ingenuity","Surveyor 1","Magellan"],c:0,e:"Ingenuity dejó de operar en 2024 por daños mecánicos en sus rotores."},
+ {img:"mercury",q:"¿En qué planeta se encontraba la sonda Messenger?",a:["Venus","Mercurio","Marte"],c:1,e:"Messenger terminó su misión al impactar deliberadamente contra Mercurio."},
+ {img:"jupiter",q:"¿Qué ocurrió con la misión Galileo en 2003?",a:["Se perdió en la Luna","Fue dirigida intencionalmente hacia la atmósfera de Júpiter","Aterrizó en Marte"],c:1,e:"La misión terminó con una entrada intencional en la atmósfera de Júpiter por protección planetaria."},
+ {img:"moon",q:"¿Qué equipo quedó en la Luna después del Apollo 11?",a:["La etapa de descenso del módulo lunar","El rover Spirit","La sonda Magellan"],c:0,e:"La etapa de descenso quedó en la superficie lunar para permitir el despegue de la etapa de ascenso."},
+ {img:"comet",q:"¿Qué misión estudió el cometa 9P/Tempel 1?",a:["Deep Impact","Pioneer Venus 2","InSight"],c:0,e:"Deep Impact utilizó un impactador que colisionó con el núcleo del cometa."},
+ {img:"moon",q:"¿Qué causó el final de las operaciones de Surveyor 1?",a:["Una tormenta de polvo","La congelación de sus baterías y las variaciones térmicas","Un choque con un asteroide"],c:1,e:"El documento señala la congelación de las baterías y el agotamiento por variaciones térmicas."},
+ {img:"moonSite",q:"¿En qué año dejaron de funcionar los paquetes ALSEP?",a:["1969","1977","2003"],c:1,e:"Los paquetes ALSEP fueron desconectados remotamente en 1977."}
+];
+const riddles = [
+ {img:"mars",q:"Tengo un suelo rojizo y fui explorado por robots como Spirit y Opportunity. ¿Quién soy?",a:["Marte","Venus","Júpiter"],c:0,e:"¡Correcto! Marte es conocido como el planeta rojo."},
+ {img:"comet",q:"No soy un planeta. Tengo un núcleo que fue visitado por una misión llamada Deep Impact. ¿Qué soy?",a:["La Luna","El cometa 9P/Tempel 1","El Sol"],c:1,e:"¡Correcto! Deep Impact estudió el cometa 9P/Tempel 1."},
+ {img:"mercury",q:"Soy el planeta más cercano al Sol y recibí la visita de Messenger. ¿Quién soy?",a:["Mercurio","Marte","Venus"],c:0,e:"¡Correcto! Messenger exploró Mercurio."},
+ {img:"moonSite",q:"Me encuentro en la Luna y fui el lugar donde quedó la etapa de descenso del Apollo 11. ¿Qué lugar soy?",a:["Cráter Gusev","Mare Tranquillitatis","Elysium Planitia"],c:1,e:"¡Correcto! La ubicación indicada es Mare Tranquillitatis."},
+ {img:"ingenuity",q:"Soy un pequeño helicóptero que exploró Marte y sufrí daños en mis rotores. ¿Quién soy?",a:["Sojourner","Ingenuity","Spirit"],c:1,e:"¡Correcto! Ingenuity fue el helicóptero que exploró Marte."}
+];
+const decisions = [
+ {img:"mars",q:"El Spirit quedó atrapado en un terreno de arena blanda en Marte y sus ruedas no lograban sacarlo. ¿Qué harías si fueras parte del equipo de la NASA?",a:["Intentar diseñar un movimiento diferente para liberarlo","Buscar una forma de mejorar su posición frente al Sol","Enviar instrucciones para ahorrar energía mientras se busca una solución"],e:"Las tres opciones son ideas para debatir. Lo importante es explicar cómo ayudarían al rover. No hay una única respuesta correcta.",note:"Reto creativo: explica por qué elegiste esa opción."},
+ {img:"mars",q:"Una tormenta de polvo cubrió los paneles solares del Opportunity. ¿Qué solución propondrías?",a:["Buscar una manera de aprovechar mejor la energía disponible","Esperar a que las condiciones ambientales cambien","Diseñar un sistema que ayude a mantener los paneles limpios"],e:"Piensa en la importancia de la energía solar para que un vehículo espacial pueda seguir trabajando. Las tres opciones permiten conversar sobre posibles soluciones.",note:"Reto creativo: menciona una ventaja y una dificultad de tu idea."},
+ {img:"moon",q:"Encuentras un antiguo equipo espacial en la Luna. ¿Qué harías?",a:["Investigar qué misión realizó","Estudiar qué descubrimientos permitió","Registrar su ubicación y conservar la información"],e:"¡Las tres decisiones son útiles! Conocer los equipos antiguos ayuda a comprender la historia de la exploración espacial.",note:"Reto creativo: explica qué información registrarías."}
+];
+let items=[], index=0, points=0, answered=false, correctCount=0;
+
+// Fotografía de portada cargada desde la biblioteca oficial de NASA.
+getNasaImage("mars").then(photo => {
+  const hero = document.getElementById("heroPhoto");
+  if (photo.url) hero.src = photo.url;
+  else {
+    hero.style.display = "none";
+    document.getElementById("heroFallback").style.display = "grid";
+  }
+});
+
+function startGame(){
+ items=[
+  ...trivia.map(x=>({...x,type:"Trivia"})),
+  ...riddles.map(x=>({...x,type:"Acertijo"})),
+  ...decisions.map(x=>({...x,type:"Decisión",decision:true}))
+ ];
+ index=0; points=0; correctCount=0;
+ document.getElementById("start").classList.add("hidden");
+ document.getElementById("finish").classList.add("hidden");
+ document.getElementById("game").classList.remove("hidden");
+ render();
+}
+function render(){
+ const item=items[index]; answered=false;
+ document.getElementById("stage").textContent=item.type;
+ document.getElementById("counter").textContent=`Reto ${index+1} de ${items.length}`;
+ document.getElementById("score").textContent=`Puntos: ${points}`;
+ document.getElementById("progress").style.width=`${(index/items.length)*100}%`;
+ document.getElementById("feedback").className="feedback hidden";
+ document.getElementById("feedback").textContent="";
+ document.getElementById("next").disabled=true;
+ document.getElementById("next").textContent=index===items.length-1?"Ver resultado":"Siguiente";
+ const content=document.getElementById("content");
+ const photo = nasaImages[item.img || "mars"];
+ content.innerHTML=`<span class="tag">${item.type}</span>
+ <div class="image-frame"><img class="question-image" id="questionPhoto" alt="${photo.caption}" src="">
+ <div class="image-caption" id="photoCaption">${photo.caption} · Cargando imagen de NASA…</div>
+ <div class="image-source"><a href="${photo.source}" target="_blank" rel="noopener">Consultar en NASA</a></div></div>
+ <h2>${item.q}</h2><div class="choices" id="choices"></div>${item.decision?`<p class="decision-note">${item.note}</p>`:""}`;
+ showNasaImage(document.getElementById("questionPhoto"), document.getElementById("photoCaption"), item.img || "mars");
+ const choices=document.getElementById("choices");
+ item.a.forEach((answer,i)=>{
+   const b=document.createElement("button"); b.className="choice"; b.textContent=String.fromCharCode(65+i)+". "+answer;
+   b.onclick=()=>selectAnswer(i,b); choices.appendChild(b);
+ });
+}
+function selectAnswer(selected,button){
+ if(answered) return;
+ answered=true;
+ const item=items[index], buttons=[...document.querySelectorAll(".choice")];
+ buttons.forEach((b,i)=>{
+   b.disabled=true;
+   if(!item.decision && i===item.c) b.classList.add("correct");
+ });
+ const fb=document.getElementById("feedback"); fb.classList.remove("hidden");
+ if(item.decision){
+   button.classList.add("correct");
+   fb.classList.add("good");
+   fb.innerHTML="<strong>¡Decisión registrada!</strong><br>"+item.e;
+ } else if(selected===item.c){
+   points++; correctCount++;
+   button.classList.add("correct"); fb.classList.add("good");
+   fb.innerHTML="<strong>¡Respuesta correcta! +1 punto</strong><br>"+item.e;
+ } else {
+   button.classList.add("wrong"); fb.classList.add("bad");
+   fb.innerHTML="<strong>No es esa respuesta.</strong><br>"+item.e;
+ }
+ document.getElementById("score").textContent=`Puntos: ${points}`;
+ document.getElementById("next").disabled=false;
+}
+function nextItem(){
+ if(!answered) return;
+ index++;
+ if(index>=items.length){finishGame();return;}
+ render();
+}
+function finishGame(){
+ document.getElementById("game").classList.add("hidden");
+ document.getElementById("finish").classList.remove("hidden");
+ document.getElementById("progress").style.width="100%";
+ document.getElementById("finalScore").textContent=`${points} / ${trivia.length+riddles.length}`;
+ let msg=points>=14?"¡Excelente trabajo! Eres un gran explorador espacial.":points>=9?"¡Muy bien! Has aprendido bastante sobre las misiones espaciales.":"¡Buen intento! Puedes volver a jugar y descubrir nuevos datos.";
+ document.getElementById("finalMessage").textContent=msg;
+ document.getElementById("finalDetail").textContent=`Respondiste correctamente ${correctCount} preguntas de trivia y acertijos. También completaste ${decisions.length} retos de decisión.`;
+}
+function quitToStart(){
+ document.getElementById("game").classList.add("hidden");
+ document.getElementById("finish").classList.add("hidden");
+ document.getElementById("start").classList.remove("hidden");
+}
+</script>
+</body>
+</html>
