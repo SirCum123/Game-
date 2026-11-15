@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#25115c">
+<title>Juguemos a Encontrar | Aventura espacial</title>
+<style>
+:root{
+ --ink:#25164b;--purple:#673bd2;--pink:#ff65ad;--cyan:#37c9e8;--yellow:#ffd84d;
+ --green:#38c98b;--paper:#fffdf8;--muted:#6d6686;--line:#e7ddff;
+}
+*{box-sizing:border-box}
+body{
+ margin:0;min-height:100vh;color:var(--ink);
+ font-family:"Trebuchet MS", "Arial Rounded MT Bold",system-ui,sans-serif;
+ background:
+  radial-gradient(circle at 8% 12%,#fff4a8 0 5px,transparent 6px),
+  radial-gradient(circle at 88% 22%,#fff 0 3px,transparent 4px),
+  radial-gradient(circle at 18% 78%,#fff 0 4px,transparent 5px),
+  linear-gradient(145deg,#8c65ef 0%,#5a4bd6 48%,#27b8d4 100%);
+ background-size:180px 180px,230px 230px,260px 260px,auto;
+ padding:22px 12px 38px;
+}
+.wrap{width:min(900px,100%);margin:auto}
+header{text-align:center;color:white;margin:4px auto 20px}
+.kicker{display:inline-block;background:var(--yellow);color:#56399a;border-radius:99px;padding:7px 14px;font-weight:900;font-size:.8rem;letter-spacing:.04em;box-shadow:0 4px 0 #e6ad27}
+h1{font-size:clamp(2.2rem,7vw,4rem);line-height:1;margin:18px 0 10px;text-shadow:0 4px 0 rgba(42,22,111,.24)}
+.subtitle{max-width:650px;margin:0 auto;color:#f4efff;font-size:1.05rem;line-height:1.5}
+.planet-row{font-size:clamp(1.7rem,5vw,2.7rem);letter-spacing:.25em;margin:14px 0 0}
+.panel{
+ background:var(--paper);border:4px solid white;border-radius:28px;
+ padding:clamp(18px,4vw,32px);box-shadow:0 12px 0 rgba(40,22,105,.2),0 24px 55px rgba(31,18,91,.22);
+}
+.hidden{display:none!important}
+.hero{
+ width:100%;height:clamp(170px,32vw,270px);object-fit:cover;display:block;
+ border-radius:20px;border:5px solid #d9ceff;background:#20164b;
+}
+.hero-caption{text-align:center;font-size:.78rem;color:var(--muted);margin:7px 0 16px}
+h2{font-size:clamp(1.45rem,4vw,2rem);line-height:1.2;margin:8px 0 12px}
+p{line-height:1.55}
+.muted{color:var(--muted)}
+.feature-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;margin:22px 0}
+.feature{border-radius:18px;padding:16px;background:#f2edff;border:2px solid #e1d6ff}
+.feature:nth-child(2){background:#e7faff;border-color:#c8f1fa}
+.feature:nth-child(3){background:#fff4d8;border-color:#ffe7a1}
+.feature .emoji{font-size:1.8rem;display:block;margin-bottom:5px}
+.feature strong{display:block;font-size:1.02rem}
+.feature small{display:block;color:var(--muted);line-height:1.4;margin-top:4px}
+.btn{
+ border:0;border-radius:16px;padding:13px 20px;font:inherit;font-weight:900;
+ background:var(--yellow);color:#56399a;box-shadow:0 5px 0 #e7ad25;
+ transition:transform .12s,box-shadow .12s;cursor:pointer;
+}
+.btn:hover{transform:translateY(-2px);box-shadow:0 7px 0 #e7ad25}
+.btn:active{transform:translateY(2px);box-shadow:0 2px 0 #e7ad25}
+.btn.secondary{background:#e8e1ff;color:#56399a;box-shadow:0 5px 0 #c9b9f5}
+.btn.secondary:hover{box-shadow:0 7px 0 #c9b9f5}
+.btn:disabled{opacity:.45;cursor:not-allowed;transform:none}
+.actions{display:flex;gap:12px;flex-wrap:wrap;margin-top:20px}
+.actions .btn{flex:1;min-width:145px}
+.status{display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;font-weight:900;color:#65529c}
+.progress{height:13px;background:#eee8ff;border-radius:99px;overflow:hidden;margin:13px 0 22px;border:2px solid #e1d7ff}
+.progress>div{height:100%;width:0;background:linear-gradient(90deg,var(--pink),var(--yellow),var(--cyan));border-radius:99px;transition:width .25s}
+.pill{display:inline-block;border-radius:99px;background:#e9e1ff;color:#5a3bb0;padding:7px 13px;font-weight:900;font-size:.82rem;margin-bottom:12px}
+.photo-card{overflow:hidden;border-radius:20px;border:3px solid #ded4ff;background:#f4f0ff;margin:8px 0 18px}
+.question-photo{width:100%;height:clamp(150px,35vw,270px);object-fit:cover;display:block;background:linear-gradient(135deg,#31216f,#1d91bd)}
+.photo-caption{padding:8px 12px;font-size:.78rem;color:#625782}
+.photo-caption a{color:#5d3ac0;font-weight:900}
+.answers{display:grid;gap:11px;margin:18px 0}
+.answer{
+ text-align:left;width:100%;border:2px solid #ddd2ff;border-radius:17px;
+ padding:14px 16px;background:#f7f3ff;color:var(--ink);font:inherit;font-weight:800;
+ cursor:pointer;transition:.15s;
+}
+.answer:hover:not(:disabled){transform:translateY(-2px);border-color:var(--purple);background:#eee7ff}
+.answer.correct{background:#e0fff0;border-color:#37b77d;color:#14613f}
+.answer.wrong{background:#fff0f3;border-color:#ff83a8;color:#91334e}
+.feedback{padding:14px 16px;border-radius:17px;background:#f0edff;border:2px dashed #bba9f2;color:#4c397f;line-height:1.5;margin:14px 0;min-height:52px}
+.feedback.good{background:#e7fff2;border-color:#70d9a6;color:#176340}
+.feedback.bad{background:#fff0f3;border-color:#ff9bb6;color:#87364e}
+.note{font-size:.9rem;color:var(--muted);background:#fff8df;padding:12px 14px;border-radius:14px}
+.score-big{font-size:3.2rem;font-weight:1000;color:#6943cb}
+.stars{font-size:2rem;letter-spacing:.2em}
+footer{text-align:center;color:#f3efff;font-size:.8rem;margin:22px 10px 0;line-height:1.5}
+@media(max-width:520px){body{padding:14px 9px 28px}.panel{border-radius:22px}.actions .btn{min-width:100%}.status{font-size:.88rem}}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header>
+ <span class="kicker">🚀 UNA AVENTURA PARA EXPLORADORES DE 7 A 12 AÑOS</span>
+ <h1>¡Juguemos a Encontrar!</h1>
+ <p class="subtitle">Ayuda a descubrir las historias de los equipos que viajaron por el espacio. ¡Aprende, juega y conviértete en explorador espacial!</p>
+ <div class="planet-row" aria-hidden="true">🌙 🪐 ⭐ 🚀 🌎</div>
+</header>
+
+<main>
+<section id="start" class="panel">
+ <h2>¡Hola, pequeño explorador! 👩‍🚀</h2>
+ <p>Algunos robots y sondas viajaron muy lejos para conocer otros mundos. Sus misiones terminaron, pero sus descubrimientos siguen ayudándonos a aprender. ¿Te animas a encontrarlos?</p>
+ <img id="heroPhoto" class="hero" alt="Imagen de una misión de exploración en Marte" src="">
+ <div class="hero-caption" id="heroCaption">Preparando una imagen del archivo de NASA…</div>
+ <div class="feature-grid">
+  <div class="feature"><span class="emoji">🧠</span><strong>Trivia espacial</strong><small>Responde preguntas y gana puntos.</small></div>
+  <div class="feature"><span class="emoji">🔎</span><strong>Acertijos</strong><small>Descubre planetas y equipos misteriosos.</small></div>
+  <div class="feature"><span class="emoji">💡</span><strong>¡Tú decides!</strong><small>Imagina soluciones para ayudar a las misiones.</small></div>
+ </div>
+ <p class="note">⭐ Cada respuesta correcta vale un punto. En los retos de imaginación no hay respuestas malas: ¡lo importante es explicar tu idea!</p>
+ <div class="actions"><button class="btn" onclick="startGame()">¡Comenzar aventura! 🚀</button></div>
+</section>
+
+<section id="game" class="panel hidden">
+ <div class="status"><span id="stage">🧠 Trivia</span><span id="counter">Reto 1 de 20</span><span id="score">⭐ 0 puntos</span></div>
+ <div class="progress"><div id="progress"></div></div>
+ <div id="content"><p class="muted">Preparando los retos espaciales…</p></div>
+ <div id="feedback" class="feedback hidden" aria-live="polite"></div>
+ <div class="actions">
+  <button id="next" class="btn" onclick="nextItem()" disabled>¡Siguiente! ➜</button>
+  <button class="btn secondary" onclick="quitToStart()">🏠 Inicio</button>
+ </div>
+</section>
+
+<section id="finish" class="panel hidden">
+ <div class="stars">🌟 🚀 🌟</div>
+ <h2>¡Misión cumplida, explorador!</h2>
+ <div class="score-big" id="finalScore">0 / 17</div>
+ <p id="finalMessage"></p>
+ <p class="muted" id="finalDetail"></p>
+ <div class="actions">
+  <button class="btn" onclick="startGame()">¡Jugar otra vez! 🔁</button>
+  <button class="btn secondary" onclick="quitToStart()">🏠 Volver al inicio</button>
+ </div>
+</section>
+</main>
+<footer>🌌 Juguemos a Encontrar · Un juego para conocer las historias de las misiones espaciales.<br>Las fotografías se consultan en la biblioteca oficial de imágenes de NASA. Se necesita internet.</footer>
+</div>
+
+<script>
+const imageSearch = {
+ moon:{q:"Apollo 11 lunar module Moon",label:"Apollo 11 y la exploración de la Luna",link:"https://images.nasa.gov/search?q=Apollo%2011"},
+ mars:{q:"Mars rover Opportunity Spirit landscape",label:"Los robots exploradores de Marte",link:"https://images.nasa.gov/search?q=Mars%20rovers"},
+ rover:{q:"Mars Pathfinder Sojourner rover",label:"Sojourner, el pequeño explorador de Marte",link:"https://images.nasa.gov/search?q=Sojourner%20Mars%20Pathfinder"},
+ ingenuity:{q:"Ingenuity Mars helicopter",label:"Ingenuity, el helicóptero de Marte",link:"https://images.nasa.gov/search?q=Ingenuity%20Mars"},
+ venus:{q:"Magellan spacecraft Venus",label:"Venus y la misión Magellan",link:"https://images.nasa.gov/search?q=Magellan%20Venus"},
+ mercury:{q:"MESSENGER Mercury spacecraft",label:"Mercurio y la misión Messenger",link:"https://images.nasa.gov/search?q=MESSENGER%20Mercury"},
+ jupiter:{q:"Galileo spacecraft Jupiter",label:"Júpiter y la misión Galileo",link:"https://images.nasa.gov/search?q=Galileo%20Jupiter"},
+ comet:{q:"Deep Impact Tempel 1 comet",label:"El cometa Tempel 1 y la misión Deep Impact",link:"https://images.nasa.gov/search?q=Deep%20Impact%20Tempel%201"}
+};
+const imageCache={};
+async function nasaPhoto(key){
+ if(imageCache[key])return imageCache[key];
+ const entry=imageSearch[key]||imageSearch.mars;
+ imageCache[key]=(async()=>{
+  try{
+   const res=await fetch("https://images-api.nasa.gov/search?media_type=image&page_size=10&q="+encodeURIComponent(entry.q));
+   if(!res.ok)throw Error("NASA API");
+   const data=await res.json(),items=data.collection?.items||[];
+   for(const item of items){
+    const url=item.links?.find(x=>x.rel==="preview")?.href;
+    if(url && /^https?:/.test(url))return {url,title:item.data?.[0]?.title||entry.label,link:entry.link};
+   }
+  }catch(e){}
+  return {url:null,title:entry.label,link:entry.link};
+ })();
+ return imageCache[key];
+}
+async function loadPhoto(img,caption,key){
+ const photo=await nasaPhoto(key);
+ if(photo.url){img.src=photo.url;img.alt=photo.title;caption.textContent=photo.title+" · Imagen de NASA";}
+ else{img.style.display="none";caption.innerHTML=photo.title+' · <a target="_blank" rel="noopener" href="'+photo.link+'">Ver imágenes en NASA</a>';}
+}
+const trivia=[
+{q:"¿En qué año llegó el ser humano a la Luna con Apollo 11?",a:["1967","1969","1977"],c:1,img:"moon",e:"¡Sí! Apollo 11 llegó a la Luna en 1969. 🌙"},
+{q:"¿En qué planeta trabajó el pequeño rover Sojourner?",a:["Marte","Venus","Júpiter"],c:0,img:"rover",e:"¡Correcto! Sojourner exploró Marte en la misión Mars Pathfinder."},
+{q:"¿Qué buscaba estudiar el rover Spirit en Marte?",a:["Rocas y suelos con pistas sobre el agua","Animales marcianos","Anillos de Saturno"],c:0,img:"mars",e:"¡Muy bien! Spirit estudió rocas y suelos para buscar pistas de que hubo agua en el pasado."},
+{q:"¿Qué cubrió los paneles solares del Opportunity?",a:["Nieve","Polvo de una tormenta global","Hojas"],c:1,img:"mars",e:"¡Exacto! Una gran tormenta cubrió sus paneles solares con polvo."},
+{q:"¿En qué lugar de Marte quedó el Spirit?",a:["Cráter Gusev, zona Troy","Monte Olimpo de la Tierra","Océano Pacífico"],c:0,img:"mars",e:"¡Lo encontraste! Su lugar final fue Troy, en el cráter Gusev."},
+{q:"¿Qué tipo de vehículo era Ingenuity?",a:["Un submarino","Un helicóptero pequeño","Un tren espacial"],c:1,img:"ingenuity",e:"¡Correcto! Ingenuity fue un pequeño helicóptero que voló en Marte."},
+{q:"¿En qué planeta terminó su viaje la sonda Messenger?",a:["Mercurio","Marte","Venus"],c:0,img:"mercury",e:"¡Así es! Messenger exploró Mercurio."},
+{q:"¿Qué planeta estudió la misión Galileo?",a:["Júpiter","Mercurio","Venus"],c:0,img:"jupiter",e:"¡Correcto! Galileo estudió Júpiter y sus lunas."},
+{q:"¿Qué equipo quedó en la Luna después del Apollo 11?",a:["La etapa de descenso del módulo lunar","El rover Spirit","El helicóptero Ingenuity"],c:0,img:"moon",e:"¡Bien hecho! La etapa de descenso quedó en la superficie lunar."},
+{q:"¿Qué misión visitó el cometa 9P/Tempel 1?",a:["Deep Impact","Magellan","Sojourner"],c:0,img:"comet",e:"¡Lo lograste! Deep Impact estudió el cometa 9P/Tempel 1."},
+{q:"¿En qué año dejaron de funcionar los paquetes ALSEP?",a:["1969","1977","2003"],c:1,img:"moon",e:"¡Correcto! Los paquetes ALSEP fueron desconectados en 1977."},
+{q:"¿En qué planeta trabajó el módulo InSight?",a:["Marte","Venus","Júpiter"],c:0,img:"mars",e:"¡Sí! InSight fue un módulo de aterrizaje que estudió Marte."}
+];
+const riddles=[
+{q:"Soy rojizo y tengo exploradores llamados Spirit y Opportunity. ¿Quién soy?",a:["Marte","Venus","Mercurio"],c:0,img:"mars",e:"¡Marte! A veces lo llaman el planeta rojo."},
+{q:"No soy un planeta. Soy un pequeño cuerpo rocoso que visitó Deep Impact. ¿Qué soy?",a:["Un cometa","Una estrella","Una galaxia"],c:0,img:"comet",e:"¡Un cometa! Deep Impact estudió el cometa 9P/Tempel 1."},
+{q:"Soy el planeta más cercano al Sol y me visitó Messenger. ¿Quién soy?",a:["Mercurio","Júpiter","Marte"],c:0,img:"mercury",e:"¡Mercurio! Es el planeta más cercano al Sol."},
+{q:"Soy el planeta gigante que estudió la misión Galileo. ¿Quién soy?",a:["Júpiter","Venus","La Tierra"],c:0,img:"jupiter",e:"¡Júpiter! Es un planeta gigante."},
+{q:"Tengo una atmósfera muy caliente y fui explorado por sondas Pioneer Venus 2. ¿Quién soy?",a:["Venus","Marte","Mercurio"],c:0,img:"venus",e:"¡Venus! Las sondas Pioneer Venus 2 estudiaron su atmósfera y superficie."}
+];
+const decisions=[
+{q:"¡El rover Spirit quedó atrapado en arena blanda! Si fueras parte del equipo, ¿qué idea propondrías?",a:["Probar movimientos cuidadosos para intentar liberarlo","Dibujarle una salida en un mapa","Mandarle una canción"],img:"mars",e:"¡Buena idea! Este reto es para imaginar. Cuenta por qué tu propuesta podría ayudar al equipo."},
+{q:"Una tormenta cubrió los paneles solares del Opportunity. ¿Qué harías?",a:["Pensar cómo cuidar o aprovechar mejor su energía","Pintarlo de otro color","Pedirle que salte por encima del polvo"],img:"mars",e:"¡Reto superado! Lo importante es pensar que los paneles solares ayudan al rover a conseguir energía."},
+{q:"Encuentras un equipo antiguo en la Luna. ¿Qué sería bueno hacer?",a:["Investigar qué misión realizó y registrar dónde está","Llevártelo sin estudiarlo","Ignorar sus descubrimientos"],img:"moon",e:"¡Excelente! Investigar y registrar los equipos ayuda a conservar la historia de la exploración espacial."}
+];
+let items=[],index=0,points=0,correct=0,answered=false;
+function startGame(){
+ items=[...trivia.map(x=>({...x,type:"🧠 Trivia"})),...riddles.map(x=>({...x,type:"🔎 Acertijo"})),...decisions.map(x=>({...x,type:"💡 Tú decides",decision:true}))];
+ index=0;points=0;correct=0;
+ document.getElementById("start").classList.add("hidden");
+ document.getElementById("finish").classList.add("hidden");
+ document.getElementById("game").classList.remove("hidden");
+ render();
+}
+function render(){
+ const item=items[index];answered=false;
+ document.getElementById("stage").textContent=item.type;
+ document.getElementById("counter").textContent=`Reto ${index+1} de ${items.length}`;
+ document.getElementById("score").textContent=`⭐ ${points} puntos`;
+ document.getElementById("progress").style.width=(index/items.length*100)+"%";
+ const fb=document.getElementById("feedback");fb.className="feedback hidden";fb.textContent="";
+ const next=document.getElementById("next");next.disabled=true;next.textContent=index===items.length-1?"Ver resultado 🏆":"¡Siguiente! ➜";
+ const content=document.getElementById("content"),photo=imageSearch[item.img||"mars"];
+ content.innerHTML=`<span class="pill">${item.type}</span>
+ <div class="photo-card"><img class="question-photo" id="questionPhoto" alt="${photo.label}" src=""><div class="photo-caption" id="photoCaption">Cargando fotografía de NASA…</div></div>
+ <h2>${item.q}</h2><div class="answers" id="answers"></div>${item.decision?'<p class="note">💭 ¡No hay una sola respuesta! Elige la idea que más te guste y explica tu imaginación.</p>':""}`;
+ loadPhoto(document.getElementById("questionPhoto"),document.getElementById("photoCaption"),item.img||"mars");
+ item.a.forEach((answer,i)=>{const b=document.createElement("button");b.className="answer";b.textContent=String.fromCharCode(65+i)+". "+answer;b.onclick=()=>choose(i,b);document.getElementById("answers").appendChild(b);});
+}
+function choose(n,button){
+ if(answered)return;answered=true;
+ const item=items[index],buttons=[...document.querySelectorAll(".answer")];
+ buttons.forEach((b,i)=>{b.disabled=true;if(!item.decision&&i===item.c)b.classList.add("correct");});
+ const fb=document.getElementById("feedback");fb.classList.remove("hidden");
+ if(item.decision){button.classList.add("correct");fb.classList.add("good");fb.innerHTML="<strong>¡Idea guardada! 🌟</strong><br>"+item.e;}
+ else if(n===item.c){points++;correct++;button.classList.add("correct");fb.classList.add("good");fb.innerHTML="<strong>¡Respuesta correcta! +1 punto ⭐</strong><br>"+item.e;}
+ else{button.classList.add("wrong");fb.classList.add("bad");fb.innerHTML="<strong>¡Buen intento! 💜</strong><br>"+item.e;}
+ document.getElementById("score").textContent=`⭐ ${points} puntos`;
+ document.getElementById("next").disabled=false;
+}
+function nextItem(){if(!answered)return;index++;if(index>=items.length){finishGame();return;}render();}
+function finishGame(){
+ document.getElementById("game").classList.add("hidden");document.getElementById("finish").classList.remove("hidden");
+ document.getElementById("finalScore").textContent=`${points} / ${trivia.length+riddles.length}`;
+ document.getElementById("finalMessage").textContent=points>=14?"¡Eres una estrella de la exploración espacial! 🌟":points>=9?"¡Gran trabajo! Ya sabes muchas cosas del espacio. 🚀":"¡Buen intento! Cada aventura nos enseña algo nuevo. ¡Puedes jugar otra vez!";
+ document.getElementById("finalDetail").textContent=`Respondiste correctamente ${correct} preguntas y completaste ${decisions.length} retos de imaginación.`;
+ document.getElementById("progress").style.width="100%";
+}
+function quitToStart(){document.getElementById("game").classList.add("hidden");document.getElementById("finish").classList.add("hidden");document.getElementById("start").classList.remove("hidden");}
+loadPhoto(document.getElementById("heroPhoto"),document.getElementById("heroCaption"),"mars");
+</script>
+</body>
+</html>
